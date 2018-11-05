@@ -1,12 +1,11 @@
+import warnings
+#ignore warnings 
+warnings.filterwarnings("ignore")
+
 import numpy as np
 import pandas as pd
 from pathlib import Path
 import os
-import math
-import sklearn
-from glob import glob
-import tensorflow as tf
-from IPython.display import YouTubeVideo
 from feature_extraction import YouTube8MFeatureExtractor
 from PIL import Image
 
@@ -20,7 +19,7 @@ def load_model():
 
 def mod_features(features):
     X = pd.DataFrame([])
-    row_dict = {}
+    row_dict = {'id' : 1}
     for i in range(len(features)):
         row_dict['rgb' + str(i)] = features[i]
 
@@ -32,6 +31,7 @@ def main():
     import sys
     from PIL import Image
 
+    # parse command line arguments
     class MyParser(argparse.ArgumentParser):
         def error(self, message):
             sys.stderr.write('error: %s\n' % message)
@@ -52,9 +52,12 @@ def main():
     args = parser.parse_args()
     image = vars(args)['image']
 
+
     # Instantiate extractor for feature extraction
     extractor = YouTube8MFeatureExtractor()
+
     image_file = image
+
     im = np.array(Image.open(image_file))
     features = extractor.extract_rgb_frame_features(im)
 
@@ -65,7 +68,8 @@ def main():
     # load the model from disk
     model = load_model()
 
-    result = model.predict(X)
+    result = model.predict(X)[0]
+
     if result == 1:
         print("Indoor")
     else:
